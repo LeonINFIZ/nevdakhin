@@ -91,6 +91,8 @@
 
   --transition-fast: 0.18s ease;
   --transition-normal: 0.28s ease;
+
+  --header-height: 106px;
 }
 
 *, *::before, *::after {
@@ -101,13 +103,13 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 110px;
+  scroll-padding-top: calc(var(--header-height, 106px) + 8px);
   -webkit-text-size-adjust: 100%;
   overflow-x: clip;
 }
 
 .scroll-section {
-  scroll-margin-top: 110px;
+  scroll-margin-top: calc(var(--header-height, 106px) + 8px);
 }
 
 /* Subtle separator dot */
@@ -594,7 +596,7 @@ img {
 /* Category Sticky Pills Bar */
 .category-sticky-bar {
   position: sticky;
-  top: 104px;
+  top: var(--header-height, 106px);
   z-index: 35;
   background: rgba(251, 248, 243, 0.96);
   backdrop-filter: blur(10px);
@@ -1013,18 +1015,22 @@ img {
   }
 
   .category-sticky-bar {
-    top: 98px;
+    top: var(--header-height, 106px);
   }
 }
 
 /* Mobile Devices (max-width: 768px) */
 @media (max-width: 768px) {
+  :root {
+    --header-height: 77px;
+  }
+
   html {
-    scroll-padding-top: 68px;
+    scroll-padding-top: calc(var(--header-height, 77px) + 8px);
   }
 
   .scroll-section {
-    scroll-margin-top: 68px;
+    scroll-margin-top: calc(var(--header-height, 77px) + 8px);
   }
 
   .container {
@@ -1122,7 +1128,7 @@ img {
   }
 
   .category-sticky-bar {
-    top: 54px !important;
+    top: var(--header-height, 77px) !important;
     padding: 8px 0;
   }
 
@@ -1170,6 +1176,6 @@ img {
   }
 
   .category-sticky-bar {
-    top: 52px !important;
+    top: var(--header-height, 77px) !important;
   }
 }

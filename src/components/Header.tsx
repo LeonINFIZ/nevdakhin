@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, MapPin, Phone, ShieldCheck, User, Menu, X } from 'lucide-react';
@@ -16,9 +16,35 @@ interface HeaderProps {
 export default function Header({}: HeaderProps) {
   const { cartCount, cartTotal } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = Math.round(headerRef.current.getBoundingClientRect().height);
+        if (height > 0) {
+          document.documentElement.style.setProperty('--header-height', `${height}px`);
+        }
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && headerRef.current) {
+      ro = new ResizeObserver(updateHeaderHeight);
+      ro.observe(headerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight);
+      if (ro) ro.disconnect();
+    };
+  }, []);
 
   return (
-    <header className="header-wrapper">
+    <header className="header-wrapper" ref={headerRef}>
       {/* Top micro-bar */}
       <div className="header-top">
         <div className="container header-top-inner">
