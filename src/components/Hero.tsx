@@ -172,7 +172,9 @@ export default function Hero() {
                 padding: '24px',
                 border: '2px solid var(--border-craft)',
                 boxShadow: 'var(--shadow-md)',
-                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <div
@@ -180,14 +182,6 @@ export default function Hero() {
                   position: 'relative',
                   width: '100%',
                   aspectRatio: '1 / 1.15',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  background: '#F8F4EC',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px dashed var(--border-craft)',
-                  marginBottom: '16px',
                 }}
               >
                 <Image
@@ -195,33 +189,9 @@ export default function Hero() {
                   alt="НЕВДАХИНЪ гравюра мастера"
                   fill
                   sizes="(max-width: 768px) 100vw, 420px"
-                  style={{ objectFit: 'contain', padding: '16px' }}
+                  style={{ objectFit: 'contain' }}
                   priority
                 />
-              </div>
-
-              <div
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: 'var(--bg-dark)',
-                  lineHeight: 1.2,
-                }}
-              >
-                Дмитрий Невдахин
-              </div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: 'var(--accent-copper)',
-                  fontWeight: 700,
-                  marginTop: '4px',
-                }}
-              >
-                Мастер-ремесленник мануфактуры
               </div>
             </div>
           </div>

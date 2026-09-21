@@ -546,8 +546,9 @@ img {
 }
 
 /* Catalog Header Section */
-.catalog-header-section {
-  padding-top: 36px;
+.catalog-header-section,
+.catalog-header-container {
+  padding-top: 20px;
 }
 
 .catalog-title-row {
@@ -560,6 +561,7 @@ img {
 }
 
 .catalog-title {
+  margin: 0;
   font-size: 32px;
   color: var(--bg-dark);
   line-height: 1.2;
@@ -568,7 +570,8 @@ img {
 .catalog-subtitle {
   font-size: 14px;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
+  margin-bottom: 0;
 }
 
 .catalog-search-wrapper {
@@ -577,18 +580,21 @@ img {
   max-width: 320px;
 }
 
-.catalog-search-icon {
+.catalog-search-wrapper .catalog-search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+  pointer-events: none;
+  z-index: 2;
 }
 
-.catalog-search-input {
-  padding-left: 36px;
+.catalog-search-wrapper .catalog-search-input {
+  padding-left: 44px !important;
+  padding-right: 14px;
   height: 42px;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 /* Category Sticky Pills Bar */
@@ -1103,7 +1109,8 @@ img {
   }
 
   /* Sticky categories bar on mobile */
-  .catalog-header-section {
+  .catalog-header-section,
+  .catalog-header-container {
     padding-top: 20px;
   }
 
