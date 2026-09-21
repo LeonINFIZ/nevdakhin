@@ -8,6 +8,7 @@ import CategoryNav from '@/components/CategoryNav';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '@/components/ProductModal';
 import AboutMaster from '@/components/AboutMaster';
+import RecipesBanner from '@/components/RecipesBanner';
 import DeliverySection from '@/components/DeliverySection';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
@@ -158,6 +159,9 @@ export default function HomePage() {
             )}
           </div>
         </section>
+
+        {/* Recipes Banner — step-by-step cooking guides */}
+        <RecipesBanner />
 
         {/* About the Master Dmitry Nevdakhin & Story */}
         <AboutMaster />

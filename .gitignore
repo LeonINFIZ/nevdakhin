@@ -22,10 +22,15 @@ yarn-error.log*
 .env.production.local
 
 # Database temporary files
+*.db
 data/*.db
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm
+
+# Uploads
+public/uploads/*
+!public/uploads/.gitkeep
 
 # OS files
 .DS_Store
