@@ -19,7 +19,9 @@ export default function Header({ cartCount, cartTotal, onOpenCart }: HeaderProps
         <div className="container header-top-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <MapPin size={13} style={{ color: 'var(--accent-amber)' }} />
-            <span>д. Бурцево, ул. Раздолье, 236/2 • Доставка в радиусе 4 км (от 5000 ₽ бесплатно)</span>
+            <span>
+              д. Бурцево, ул. Раздолье, 236/2 <span className="sep-dot" /> Доставка в радиусе 4 км (от 5 000 ₽ бесплатно)
+            </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>

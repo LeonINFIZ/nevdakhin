@@ -27,7 +27,7 @@ export default function CategoryNav({
   const subcategories: Subcategory[] = currentCat?.subcategories || [];
 
   return (
-    <div className="category-nav-wrapper" id="catalog">
+    <div className="category-nav-wrapper scroll-section" id="catalog">
       <div className="container">
         {/* Search & Header row */}
         <div

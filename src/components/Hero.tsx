@@ -43,7 +43,7 @@ export default function Hero() {
               }}
             >
               <Award size={15} />
-              <span>Домашнее ремесленное производство • Семейные рецепты</span>
+              <span>Домашнее ремесленное производство <span className="sep-dot" /> Семейные рецепты</span>
             </div>
 
             <h1

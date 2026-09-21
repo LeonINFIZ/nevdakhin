@@ -3,16 +3,17 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, ShieldCheck, Heart, Lock } from 'lucide-react';
+import { MapPin, Phone, ShieldCheck, Lock, Clock } from 'lucide-react';
 
 export default function Footer() {
   return (
     <footer
       id="contacts"
+      className="scroll-section"
       style={{
         background: 'var(--bg-dark)',
         color: 'var(--text-light-muted)',
-        padding: '56px 0 24px',
+        padding: '64px 0 28px',
         borderTop: '1px solid var(--border-dark)',
       }}
     >
@@ -53,16 +54,16 @@ export default function Footer() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--accent-gold)' }}>
               <ShieldCheck size={16} />
-              <span>Без химии • Без консервантов • 100% мясо</span>
+              <span>Без химии <span className="sep-dot" /> Без консервантов <span className="sep-dot" /> 100% мясо</span>
             </div>
           </div>
 
-          {/* Delivery & Pickup Info */}
-          <div id="delivery">
+          {/* Contacts & Pickup Info */}
+          <div>
             <h4 style={{ fontSize: '18px', color: '#FFFFFF', marginBottom: '14px' }}>
-              Доставка и самовывоз
+              Контакты и самовывоз
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <MapPin size={16} style={{ color: 'var(--accent-copper)', flexShrink: 0, marginTop: '2px' }} />
                 <span>
@@ -70,21 +71,35 @@ export default function Footer() {
                 </span>
               </div>
 
-              <div>
-                <strong>Курьерская доставка:</strong> в радиусе 4 км от производства.
-                <div style={{ color: 'var(--accent-amber)', marginTop: '2px' }}>
-                  250 ₽ (бесплатно при заказе от 5 000 ₽)
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={16} style={{ color: 'var(--accent-amber)', flexShrink: 0 }} />
+                <span>Прием заказов и выдача: ежедневно с 09:00 до 21:00</span>
               </div>
 
-              <div>
-                <strong>Самовывоз:</strong> бесплатно в удобное для вас время по предварительной договоренности.
+              <div style={{ marginTop: '4px' }}>
+                <a
+                  href="tel:+79200000000"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                  }}
+                >
+                  <Phone size={16} style={{ color: 'var(--accent-copper)' }} />
+                  <span>+7 (920) 000-00-00</span>
+                </a>
+                <div style={{ fontSize: '11px', color: 'var(--text-light-muted)', marginTop: '2px' }}>
+                  Звонки, WhatsApp, Telegram
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Legal and Maker info */}
-          <div id="about">
+          {/* Legal Requisites */}
+          <div>
             <h4 style={{ fontSize: '18px', color: '#FFFFFF', marginBottom: '14px' }}>
               Реквизиты производителя
             </h4>
@@ -92,20 +107,8 @@ export default function Footer() {
               <div><strong>Производитель:</strong> ИП Невдахин Дмитрий Викторович</div>
               <div><strong>ОГРНИП:</strong> 317527500056271</div>
               <div><strong>ИНН:</strong> 526098175957</div>
-              <div style={{ marginTop: '8px' }}>
-                <a
-                  href="tel:+79200000000"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    color: '#FFFFFF',
-                    fontWeight: 600,
-                  }}
-                >
-                  <Phone size={14} style={{ color: 'var(--accent-copper)' }} />
-                  <span>Телефон для справок и заказов</span>
-                </a>
+              <div style={{ color: 'var(--text-light-muted)', fontSize: '12px', marginTop: '6px' }}>
+                Производство в экологически чистом районе Нижегородской области.
               </div>
             </div>
           </div>

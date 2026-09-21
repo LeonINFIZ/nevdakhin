@@ -9,8 +9,10 @@ import ProductModal from '@/components/ProductModal';
 import CartDrawer from '@/components/CartDrawer';
 import OrderSuccessModal from '@/components/OrderSuccessModal';
 import Footer from '@/components/Footer';
+import AboutMaster from '@/components/AboutMaster';
+import DeliverySection from '@/components/DeliverySection';
 import { Category, Product, CartItem, Order } from '@/types';
-import { ShoppingBag, Loader2, Sparkles, HeartHandshake, ShieldCheck, Flame } from 'lucide-react';
+import { ShoppingBag, Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -224,108 +226,11 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* About the Maker & Production Story */}
-        <section
-          style={{
-            background: 'var(--bg-craft)',
-            borderTop: '1px solid var(--border-craft)',
-            borderBottom: '1px solid var(--border-craft)',
-            padding: '64px 0',
-          }}
-        >
-          <div className="container">
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '48px',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <div className="badge-craft badge-recipe" style={{ marginBottom: '14px' }}>
-                  О нашем производстве
-                </div>
-                <h2 style={{ fontSize: '36px', color: 'var(--bg-dark)', marginBottom: '18px' }}>
-                  Честное домашнее дело в деревне Бурцево
-                </h2>
-                <p style={{ fontSize: '16px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '16px' }}>
-                  Все продукты «НЕВДАХИНЪ» готовятся вручную одним человеком — Дмитрием Невдахиным — 
-                  на личном дачном участке. Здесь нет фабричных конвейеров, химических консервантов 
-                  или ускоренных технологий.
-                </p>
-                <p style={{ fontSize: '16px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '24px' }}>
-                  Только отборное фермерское мясо, семейные рецептуры, настоящий автоклав для тушенки, 
-                  коптильня на натуральной ольховой щепе и ручная лепка каждого пельменя.
-                </p>
+        {/* About the Master Dmitry Nevdakhin & Story */}
+        <AboutMaster />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-craft)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '18px', color: 'var(--accent-copper)' }}>4 км</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Радиус свежей экспресс-доставки</div>
-                  </div>
-                  <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-craft)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '18px', color: 'var(--accent-green)' }}>100%</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Натуральное мясо без сои и химии</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Visual hallmarks card */}
-              <div
-                style={{
-                  background: '#FFFFFF',
-                  borderRadius: '20px',
-                  padding: '32px',
-                  border: '1px solid var(--border-craft)',
-                  boxShadow: 'var(--shadow-md)',
-                }}
-              >
-                <h3 style={{ fontSize: '24px', color: 'var(--bg-dark)', marginBottom: '20px' }}>
-                  Наши главные принципы
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                  <div style={{ display: 'flex', gap: '14px' }}>
-                    <div style={{ color: 'var(--accent-copper)', flexShrink: 0 }}>
-                      <Flame size={24} />
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '15px', color: 'var(--bg-dark)' }}>Копчение на ольхе</strong>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Классическое горячее копчение на натуральной ольховой и яблоневой щепе. Никакого жидкого дыма.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '14px' }}>
-                    <div style={{ color: 'var(--accent-green)', flexShrink: 0 }}>
-                      <ShieldCheck size={24} />
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '15px', color: 'var(--bg-dark)' }}>ГОСТ и семейные рецепты</strong>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Точные пропорции мяса, натуральных специй, чеснока и соли. Вкус как в лучших домашних традициях.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '14px' }}>
-                    <div style={{ color: 'var(--accent-amber)', flexShrink: 0 }}>
-                      <HeartHandshake size={24} />
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '15px', color: 'var(--bg-dark)' }}>Личная ответственность мастера</strong>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Дмитрий отвечает своим именем и репутацией за каждую банку тушенки и каждое кольцо колбасы.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Delivery Terms & Distance Checker */}
+        <DeliverySection />
       </main>
 
       {/* Footer */}
