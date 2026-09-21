@@ -26,7 +26,10 @@ import {
   AlertCircle,
   ExternalLink,
   ChefHat,
+  Tag,
+  Sparkles,
 } from 'lucide-react';
+import { transliterateToSlug } from '@/lib/slug';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -43,6 +46,7 @@ export default function AdminDashboardPage() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [productSearch, setProductSearch] = useState<string>('');
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
+  const [productBadgeFilter, setProductBadgeFilter] = useState<string>('all');
 
   // Modals
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -63,6 +67,8 @@ export default function AdminDashboardPage() {
   });
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [categoryFormData, setCategoryFormData] = useState({
     name: '',
     slug: '',
@@ -267,7 +273,31 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Save Category
+  // Category modal open (create or edit)
+  const handleOpenCategoryModal = (category?: Category) => {
+    if (category) {
+      setEditingCategory(category);
+      setCategoryFormData({
+        name: category.name,
+        slug: category.slug,
+        description: category.description || '',
+        subcategories: (category.subcategories || []).map((s) => s.name).join(', '),
+      });
+      setIsSlugManuallyEdited(true);
+    } else {
+      setEditingCategory(null);
+      setCategoryFormData({
+        name: '',
+        slug: '',
+        description: '',
+        subcategories: '',
+      });
+      setIsSlugManuallyEdited(false);
+    }
+    setIsCategoryModalOpen(true);
+  };
+
+  // Save Category (create or edit)
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -276,25 +306,54 @@ export default function AdminDashboardPage() {
         .map((s) => s.trim())
         .filter(Boolean);
 
-      const res = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: categoryFormData.name,
-          slug: categoryFormData.slug || categoryFormData.name.toLowerCase().replace(/[^a-z0-9_-]/gi, '-'),
-          description: categoryFormData.description,
-          subcategories: subs,
-        }),
-      });
+      const cleanSlug = transliterateToSlug(categoryFormData.slug || categoryFormData.name);
 
-      if (res.ok) {
-        showNotification('Категория успешно создана');
-        setIsCategoryModalOpen(false);
-        setCategoryFormData({ name: '', slug: '', description: '', subcategories: '' });
-        reloadData();
+      const payload = {
+        name: categoryFormData.name.trim(),
+        slug: cleanSlug,
+        description: categoryFormData.description,
+        subcategories: subs,
+      };
+
+      if (editingCategory) {
+        const res = await fetch(`/api/categories/${editingCategory.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          showNotification(`Категория «${payload.name}» успешно обновлена`);
+          setIsCategoryModalOpen(false);
+          setEditingCategory(null);
+          setCategoryFormData({ name: '', slug: '', description: '', subcategories: '' });
+          setIsSlugManuallyEdited(false);
+          reloadData();
+        } else {
+          const err = await res.json();
+          setActionError(err.error || 'Ошибка обновления категории');
+        }
+      } else {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          showNotification(`Категория «${payload.name}» успешно создана`);
+          setIsCategoryModalOpen(false);
+          setEditingCategory(null);
+          setCategoryFormData({ name: '', slug: '', description: '', subcategories: '' });
+          setIsSlugManuallyEdited(false);
+          reloadData();
+        } else {
+          const err = await res.json();
+          setActionError(err.error || 'Ошибка создания категории');
+        }
       }
     } catch {
-      setActionError('Ошибка создания категории');
+      setActionError('Ошибка сохранения категории');
     }
   };
 
@@ -369,9 +428,20 @@ export default function AdminDashboardPage() {
     if (productCategoryFilter !== 'all' && String(p.category_id) !== productCategoryFilter) {
       return false;
     }
+    if (productBadgeFilter === 'with_badge') {
+      if (!p.badge) return false;
+    } else if (productBadgeFilter === 'no_badge') {
+      if (p.badge) return false;
+    } else if (productBadgeFilter !== 'all') {
+      if (p.badge !== productBadgeFilter) return false;
+    }
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
-      return p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        (p.badge && p.badge.toLowerCase().includes(q))
+      );
     }
     return true;
   });
@@ -851,6 +921,27 @@ export default function AdminDashboardPage() {
         {/* TAB 2: PRODUCTS */}
         {activeTab === 'products' && (
           <div>
+            {/* Badge Info Banner */}
+            <div
+              style={{
+                background: '#FFF9F0',
+                border: '1px solid #F0DFCC',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                fontSize: '13px',
+                color: 'var(--text-main)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              <Tag size={18} style={{ color: 'var(--accent-copper)', flexShrink: 0 }} />
+              <div>
+                <strong>Бейджи (метки на товарах):</strong> метки («Хит продаж», «Семейный рецепт», «Новинка» или свой произвольный текст) настраиваются индивидуально для каждого товара при нажатии <strong>«Изменить»</strong> (<Edit2 size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />) в таблице ниже.
+              </div>
+            </div>
+
             <div
               style={{
                 display: 'flex',
@@ -861,15 +952,15 @@ export default function AdminDashboardPage() {
                 flexWrap: 'wrap',
               }}
             >
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1 }}>
-                <div style={{ position: 'relative', width: '280px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', width: '260px' }}>
                   <Search
                     size={16}
                     style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
                   />
                   <input
                     type="text"
-                    placeholder="Поиск по товарам..."
+                    placeholder="Поиск по названию или метке..."
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     className="form-input"
@@ -881,7 +972,7 @@ export default function AdminDashboardPage() {
                   value={productCategoryFilter}
                   onChange={(e) => setProductCategoryFilter(e.target.value)}
                   className="form-select"
-                  style={{ width: '220px', height: '38px', fontSize: '13px' }}
+                  style={{ width: '200px', height: '38px', fontSize: '13px' }}
                 >
                   <option value="all">Все категории</option>
                   {categories.map((c) => (
@@ -889,6 +980,24 @@ export default function AdminDashboardPage() {
                       {c.name}
                     </option>
                   ))}
+                </select>
+
+                <select
+                  value={productBadgeFilter}
+                  onChange={(e) => setProductBadgeFilter(e.target.value)}
+                  className="form-select"
+                  style={{ width: '190px', height: '38px', fontSize: '13px' }}
+                >
+                  <option value="all">Все метки</option>
+                  <option value="with_badge">★ Только с метками</option>
+                  <option value="no_badge">Без меток</option>
+                  <option value="Хит продаж">Хит продаж</option>
+                  <option value="Семейный рецепт">Семейный рецепт</option>
+                  <option value="Новинка">Новинка</option>
+                  <option value="ГОСТ 1936">ГОСТ 1936</option>
+                  <option value="Рекомендуем">Рекомендуем</option>
+                  <option value="Ограниченная партия">Ограниченная партия</option>
+                  <option value="Детям">Детям</option>
                 </select>
               </div>
 
@@ -917,9 +1026,10 @@ export default function AdminDashboardPage() {
                   <tr style={{ background: 'var(--bg-main)', borderBottom: '1px solid var(--border-craft)', textAlign: 'left' }}>
                     <th style={{ padding: '12px 16px', width: '60px' }}>Фото</th>
                     <th style={{ padding: '12px 16px' }}>Название и категория</th>
+                    <th style={{ padding: '12px 16px' }}>Метка (бейдж)</th>
                     <th style={{ padding: '12px 16px' }}>Фасовка</th>
                     <th style={{ padding: '12px 16px' }}>Цена</th>
-                    <th style={{ padding: '12px 16px' }}>Статус</th>
+                    <th style={{ padding: '12px 16px' }}>Наличие</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>Действия</th>
                   </tr>
                 </thead>
@@ -952,6 +1062,30 @@ export default function AdminDashboardPage() {
                           {p.category_name} {p.subcategory_name ? `› ${p.subcategory_name}` : ''}
                         </div>
                       </td>
+                      <td style={{ padding: '10px 16px' }}>
+                        {p.badge ? (
+                          <span
+                            className={`badge-craft ${
+                              p.badge === 'Хит продаж' || p.badge === 'Хит' || p.badge === 'Рекомендуем'
+                                ? 'badge-hit'
+                                : p.badge === 'Семейный рецепт' || p.badge === 'ГОСТ 1936' || p.badge === 'Ограниченная партия'
+                                ? 'badge-recipe'
+                                : p.badge === 'Новинка' || p.badge === 'Детям'
+                                ? 'badge-new'
+                                : ''
+                            }`}
+                            style={
+                              !['Хит продаж', 'Хит', 'Рекомендуем', 'Семейный рецепт', 'ГОСТ 1936', 'Ограниченная партия', 'Новинка', 'Детям'].includes(p.badge)
+                                ? { background: '#F0EBE1', color: 'var(--text-main)', border: '1px solid var(--border-craft)', fontSize: '10.5px' }
+                                : { fontSize: '10.5px' }
+                            }
+                          >
+                            {p.badge}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#BDB3A6', fontSize: '12px' }}>—</span>
+                        )}
+                      </td>
                       <td style={{ padding: '10px 16px', color: 'var(--text-muted)' }}>{p.weight || '—'}</td>
                       <td style={{ padding: '10px 16px' }}>
                         <strong style={{ fontSize: '14px' }}>{p.price} ₽</strong>
@@ -962,11 +1096,6 @@ export default function AdminDashboardPage() {
                           <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>В наличии</span>
                         ) : (
                           <span style={{ color: '#8C827A', fontWeight: 600 }}>Под заказ</span>
-                        )}
-                        {p.badge && (
-                          <div style={{ marginTop: '2px' }}>
-                            <span className="badge-craft" style={{ fontSize: '10px', padding: '2px 6px' }}>{p.badge}</span>
-                          </div>
                         )}
                       </td>
                       <td style={{ padding: '10px 16px', textAlign: 'right' }}>
@@ -1009,9 +1138,14 @@ export default function AdminDashboardPage() {
         {activeTab === 'categories' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '20px' }}>Категории и подкатегории</h3>
+              <div>
+                <h3 style={{ fontSize: '20px' }}>Категории и подкатегории</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Создавайте и редактируйте разделы каталога. Слаг формируется автоматически из названия.
+                </p>
+              </div>
               <button
-                onClick={() => setIsCategoryModalOpen(true)}
+                onClick={() => handleOpenCategoryModal()}
                 className="btn-primary"
                 style={{ padding: '10px 18px', fontSize: '14px' }}
               >
@@ -1030,29 +1164,65 @@ export default function AdminDashboardPage() {
                     padding: '20px',
                     border: '1px solid var(--border-craft)',
                     boxShadow: 'var(--shadow-sm)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <h4 style={{ fontSize: '18px', color: 'var(--bg-dark)' }}>{cat.name}</h4>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>slug: {cat.slug}</div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <h4 style={{ fontSize: '18px', color: 'var(--bg-dark)' }}>{cat.name}</h4>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          URL-слаг: <code style={{ background: 'var(--bg-craft)', padding: '1px 5px', borderRadius: '4px' }}>{cat.slug}</code>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button
+                          onClick={() => handleOpenCategoryModal(cat)}
+                          style={{
+                            background: 'var(--bg-craft)',
+                            border: '1px solid var(--border-craft)',
+                            borderRadius: '6px',
+                            padding: '6px 10px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            fontSize: '12px',
+                            color: 'var(--text-main)',
+                            fontWeight: 600,
+                          }}
+                          title="Редактировать категорию"
+                        >
+                          <Edit2 size={14} style={{ color: 'var(--accent-copper)' }} />
+                          <span>Изменить</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          style={{
+                            background: '#FFF0F0',
+                            border: '1px solid #F5C6CB',
+                            borderRadius: '6px',
+                            padding: '6px 8px',
+                            cursor: 'pointer',
+                            color: 'var(--accent-red)',
+                          }}
+                          title="Удалить категорию"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteCategory(cat.id)}
-                      style={{ color: 'var(--accent-red)', padding: '4px' }}
-                      title="Удалить категорию"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+
+                    {cat.description && (
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
+                        {cat.description}
+                      </p>
+                    )}
                   </div>
 
-                  {cat.description && (
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-                      {cat.description}
-                    </p>
-                  )}
-
-                  <div>
+                  <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '6px' }}>
                       Подкатегории:
                     </div>
@@ -1337,40 +1507,134 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Subcategory & Badge */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div className="form-group">
-                  <label className="form-label">Подкатегория</label>
-                  <select
-                    value={productFormData.subcategory_id}
-                    onChange={(e) => setProductFormData({ ...productFormData, subcategory_id: e.target.value })}
-                    className="form-select"
-                  >
-                    <option value="">Без подкатегории</option>
-                    {categories
-                      .find((c) => String(c.id) === productFormData.category_id)
-                      ?.subcategories?.map((s) => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name}
-                        </option>
-                      ))}
-                  </select>
+              {/* Subcategory */}
+              <div className="form-group">
+                <label className="form-label">Подкатегория</label>
+                <select
+                  value={productFormData.subcategory_id}
+                  onChange={(e) => setProductFormData({ ...productFormData, subcategory_id: e.target.value })}
+                  className="form-select"
+                >
+                  <option value="">Без подкатегории</option>
+                  {categories
+                    .find((c) => String(c.id) === productFormData.category_id)
+                    ?.subcategories?.map((s) => (
+                      <option key={s.id} value={String(s.id)}>
+                        {s.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Badge Management Section */}
+              <div
+                style={{
+                  background: '#FCF9F4',
+                  border: '1px solid var(--border-craft)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px' }}>
+                    <Tag size={15} style={{ color: 'var(--accent-copper)' }} />
+                    <span>Бейдж / метка деликатеса</span>
+                  </label>
+                  {productFormData.badge && (
+                    <button
+                      type="button"
+                      onClick={() => setProductFormData({ ...productFormData, badge: '' })}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent-red)',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        padding: 0,
+                      }}
+                    >
+                      ✕ Убрать метку
+                    </button>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Бейдж (метка)</label>
-                  <select
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                  Выберите готовую метку или введите свой текст. Метка отображается в верхнем углу карточки товара на сайте.
+                </p>
+
+                {/* Preset Chips */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                  {[
+                    { label: 'Хит продаж', bg: '#FFF4E5', color: '#B25E09', border: '#FCD34D' },
+                    { label: 'Семейный рецепт', bg: '#FDF2EB', color: '#C2622A', border: '#F5C7A9' },
+                    { label: 'Новинка', bg: '#EBF3ED', color: '#3A6347', border: '#B7DDC2' },
+                    { label: 'ГОСТ 1936', bg: '#FDF2EB', color: '#C2622A', border: '#F5C7A9' },
+                    { label: 'Рекомендуем', bg: '#FFF4E5', color: '#B25E09', border: '#FCD34D' },
+                    { label: 'Ограниченная партия', bg: '#FDF2EB', color: '#C2622A', border: '#F5C7A9' },
+                    { label: 'Детям', bg: '#EBF3ED', color: '#3A6347', border: '#B7DDC2' },
+                  ].map((preset) => {
+                    const isSelected = productFormData.badge === preset.label;
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setProductFormData({ ...productFormData, badge: isSelected ? '' : preset.label })}
+                        style={{
+                          padding: '5px 11px',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: isSelected ? '2px solid var(--accent-copper)' : `1px solid ${preset.border}`,
+                          background: isSelected ? '#FAF0E6' : preset.bg,
+                          color: isSelected ? 'var(--accent-copper)' : preset.color,
+                          boxShadow: isSelected ? '0 0 0 1px var(--accent-copper)' : 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {isSelected ? '✓ ' : ''}{preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom badge input & Live preview */}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="Или введите свой текст (например: Скидка 15%, Острое, Постное...)"
                     value={productFormData.badge}
                     onChange={(e) => setProductFormData({ ...productFormData, badge: e.target.value })}
-                    className="form-select"
-                  >
-                    <option value="">Без бейджа</option>
-                    <option value="Хит продаж">Хит продаж</option>
-                    <option value="Семейный рецепт">Семейный рецепт</option>
-                    <option value="Новинка">Новинка</option>
-                    <option value="ГОСТ 1936">ГОСТ 1936</option>
-                    <option value="Ограниченная партия">Ограниченная партия</option>
-                  </select>
+                    className="form-input"
+                    style={{ flex: 1, background: '#FFFFFF' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Вид:</span>
+                    {productFormData.badge ? (
+                      <span
+                        className={`badge-craft ${
+                          productFormData.badge === 'Хит продаж' || productFormData.badge === 'Хит' || productFormData.badge === 'Рекомендуем'
+                            ? 'badge-hit'
+                            : productFormData.badge === 'Семейный рецепт' || productFormData.badge === 'ГОСТ 1936' || productFormData.badge === 'Ограниченная партия'
+                            ? 'badge-recipe'
+                            : productFormData.badge === 'Новинка' || productFormData.badge === 'Детям'
+                            ? 'badge-new'
+                            : ''
+                        }`}
+                        style={
+                          !['Хит продаж', 'Хит', 'Рекомендуем', 'Семейный рецепт', 'ГОСТ 1936', 'Ограниченная партия', 'Новинка', 'Детям'].includes(productFormData.badge)
+                            ? { background: '#F0EBE1', color: 'var(--text-main)', border: '1px solid var(--border-craft)' }
+                            : undefined
+                        }
+                      >
+                        {productFormData.badge}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '12px', color: '#A0988E', fontStyle: 'italic' }}>без метки</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1478,16 +1742,18 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: ADD CATEGORY */}
+      {/* MODAL: ADD / EDIT CATEGORY */}
       {isCategoryModalOpen && (
         <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '500px', padding: '24px' }}
+            style={{ maxWidth: '520px', padding: '26px' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '20px' }}>Новая категория</h3>
+              <h3 style={{ fontSize: '20px' }}>
+                {editingCategory ? `Редактировать категорию «${editingCategory.name}»` : 'Новая категория'}
+              </h3>
               <button onClick={() => setIsCategoryModalOpen(false)}>
                 <X size={18} />
               </button>
@@ -1501,20 +1767,58 @@ export default function AdminDashboardPage() {
                   required
                   placeholder="Например: Сырная лавка"
                   value={categoryFormData.name}
-                  onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setCategoryFormData((prev) => ({
+                      ...prev,
+                      name: newName,
+                      slug: !isSlugManuallyEdited || !prev.slug ? transliterateToSlug(newName) : prev.slug,
+                    }));
+                  }}
                   className="form-input"
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Слаг (URL-идентификатор)</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ marginBottom: 0 }}>Слаг (URL-идентификатор) *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const auto = transliterateToSlug(categoryFormData.name);
+                      setCategoryFormData((prev) => ({ ...prev, slug: auto }));
+                      setIsSlugManuallyEdited(false);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-copper)',
+                      fontSize: '11.5px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontWeight: 600,
+                      padding: 0,
+                    }}
+                  >
+                    <Sparkles size={12} />
+                    <span>Сгенерировать из названия</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder="syrnaya-lavka"
                   value={categoryFormData.slug}
-                  onChange={(e) => setCategoryFormData({ ...categoryFormData, slug: e.target.value })}
+                  onChange={(e) => {
+                    setIsSlugManuallyEdited(true);
+                    setCategoryFormData({ ...categoryFormData, slug: e.target.value });
+                  }}
                   className="form-input"
                 />
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px', display: 'block' }}>
+                  Генерируется автоматически из названия категории на латинице (транслит)
+                </span>
               </div>
 
               <div className="form-group">
@@ -1548,7 +1852,7 @@ export default function AdminDashboardPage() {
                   Отмена
                 </button>
                 <button type="submit" className="btn-primary">
-                  Создать категорию
+                  {editingCategory ? 'Сохранить изменения' : 'Создать категорию'}
                 </button>
               </div>
             </form>

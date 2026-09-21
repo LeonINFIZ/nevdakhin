@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { isAuthenticatedAdmin } from '@/lib/auth';
+import { transliterateToSlug } from '@/lib/slug';
 
 export async function PUT(
   request: Request,
@@ -16,6 +17,8 @@ export async function PUT(
     const body = await request.json();
     const { name, slug, description, sort_order, is_active, subcategories } = body;
 
+    const cleanSlug = slug ? transliterateToSlug(slug) : (name ? transliterateToSlug(name) : null);
+
     const stmt = db.prepare(`
       UPDATE categories
       SET name = COALESCE(?, name),
@@ -26,7 +29,7 @@ export async function PUT(
       WHERE id = ?
     `);
 
-    stmt.run(name, slug, description, sort_order, is_active, id);
+    stmt.run(name ? name.trim() : null, cleanSlug, description !== undefined ? description : null, sort_order, is_active, id);
 
     // If subcategories list is passed, synchronize subcategories
     if (Array.isArray(subcategories)) {

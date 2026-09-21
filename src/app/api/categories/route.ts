@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { isAuthenticatedAdmin } from '@/lib/auth';
 import { Category, Subcategory } from '@/types';
+import { transliterateToSlug } from '@/lib/slug';
 
 export async function GET() {
   try {
@@ -35,11 +36,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, slug, description, subcategories } = body;
 
-    if (!name || !slug) {
-      return NextResponse.json({ error: 'Название и слаг обязательны' }, { status: 400 });
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: 'Название категории обязательно' }, { status: 400 });
     }
 
-    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9_-]/gi, '-');
+    const cleanSlug = transliterateToSlug(slug || name);
+    if (!cleanSlug) {
+      return NextResponse.json({ error: 'Не удалось сгенерировать слаг' }, { status: 400 });
+    }
 
     const stmt = db.prepare(`
       INSERT INTO categories (name, slug, description, sort_order)
