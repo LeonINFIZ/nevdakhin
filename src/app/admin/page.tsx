@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -117,6 +117,20 @@ export default function AdminDashboardPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
+
+  // Prevent accidental modal closing when dragging text selection outside modal window
+  const overlayMouseDownTarget = useRef<EventTarget | null>(null);
+
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    overlayMouseDownTarget.current = e.target;
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent, closeFn: () => void) => {
+    if (overlayMouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+      closeFn();
+    }
+    overlayMouseDownTarget.current = null;
+  };
 
   // Check auth and load initial data
   useEffect(() => {
@@ -1998,9 +2012,14 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD / EDIT PRODUCT */}
       {isProductModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsProductModalOpen(false)}>
+        <div
+          className="modal-overlay"
+          onMouseDown={handleOverlayMouseDown}
+          onClick={(e) => handleOverlayClick(e, () => setIsProductModalOpen(false))}
+        >
           <div
             className="modal-content"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '680px', padding: '28px' }}
           >
@@ -2334,9 +2353,14 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD / EDIT CATEGORY */}
       {isCategoryModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)}>
+        <div
+          className="modal-overlay"
+          onMouseDown={handleOverlayMouseDown}
+          onClick={(e) => handleOverlayClick(e, () => setIsCategoryModalOpen(false))}
+        >
           <div
             className="modal-content"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '520px', padding: '26px' }}
           >
@@ -2452,9 +2476,14 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD / EDIT BADGE */}
       {isBadgeModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsBadgeModalOpen(false)}>
+        <div
+          className="modal-overlay"
+          onMouseDown={handleOverlayMouseDown}
+          onClick={(e) => handleOverlayClick(e, () => setIsBadgeModalOpen(false))}
+        >
           <div
             className="modal-content"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '520px', padding: '28px' }}
           >
@@ -2634,9 +2663,14 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: RECIPE CONSTRUCTOR */}
       {isRecipeModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsRecipeModalOpen(false)}>
+        <div
+          className="modal-overlay"
+          onMouseDown={handleOverlayMouseDown}
+          onClick={(e) => handleOverlayClick(e, () => setIsRecipeModalOpen(false))}
+        >
           <div
             className="modal-content"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: '840px', maxHeight: '90vh', overflowY: 'auto', padding: '28px' }}
           >

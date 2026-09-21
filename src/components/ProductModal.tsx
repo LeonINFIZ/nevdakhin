@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types';
@@ -19,6 +19,8 @@ export default function ProductModal({
   onAddToCart,
   onUpdateQuantity,
 }: ProductModalProps) {
+  const overlayMouseDownTarget = useRef<EventTarget | null>(null);
+
   if (!product) return null;
 
   const imageSrc =
@@ -32,9 +34,28 @@ export default function ProductModal({
     ...(product.badge_border ? { borderColor: product.badge_border } : {}),
   };
 
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    overlayMouseDownTarget.current = e.target;
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (overlayMouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+      onClose();
+    }
+    overlayMouseDownTarget.current = null;
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-overlay"
+      onMouseDown={handleOverlayMouseDown}
+      onClick={handleOverlayClick}
+    >
+      <div
+        className="modal-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close Button */}
         <button
           onClick={onClose}
