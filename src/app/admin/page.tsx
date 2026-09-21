@@ -1135,7 +1135,7 @@ export default function AdminDashboardPage() {
                     <input
                       type="number"
                       step="0.1"
-                      value={settings.delivery_radius_km || '2.0'}
+                      value={settings.delivery_radius_km || '4.0'}
                       onChange={(e) => setSettings({ ...settings, delivery_radius_km: e.target.value })}
                       className="form-input"
                     />

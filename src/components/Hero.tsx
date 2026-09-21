@@ -153,7 +153,7 @@ export default function Hero() {
                   <Truck size={18} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--bg-dark)' }}>Доставка 2 км</div>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--bg-dark)' }}>Доставка 4 км</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Или самовывоз</div>
                 </div>
               </div>

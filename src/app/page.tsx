@@ -261,7 +261,7 @@ export default function HomePage() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-craft)' }}>
-                    <div style={{ fontWeight: 700, fontSize: '18px', color: 'var(--accent-copper)' }}>2 км</div>
+                    <div style={{ fontWeight: 700, fontSize: '18px', color: 'var(--accent-copper)' }}>4 км</div>
                     <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Радиус свежей экспресс-доставки</div>
                   </div>
                   <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-craft)' }}>

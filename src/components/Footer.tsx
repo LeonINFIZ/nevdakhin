@@ -71,7 +71,7 @@ export default function Footer() {
               </div>
 
               <div>
-                <strong>Курьерская доставка:</strong> в радиусе 2 км от производства.
+                <strong>Курьерская доставка:</strong> в радиусе 4 км от производства.
                 <div style={{ color: 'var(--accent-amber)', marginTop: '2px' }}>
                   250 ₽ (бесплатно при заказе от 5 000 ₽)
                 </div>

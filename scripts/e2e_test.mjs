@@ -67,22 +67,22 @@ async function runE2E() {
   await page.click('button:has-text("Доставка до двери")');
   await page.waitForTimeout(300);
 
-  // Test Case A: Outside 2km (Nizhny Novgorod center)
-  console.log('6a. Testing outside 2km address...');
+  // Test Case A: Outside 4km (Nizhny Novgorod center)
+  console.log('6a. Testing outside 4km address...');
   const addressInput = page.locator('input[placeholder*="д. Бурцево"]');
   await addressInput.fill('г Нижний Новгород, ул Белинского, д 10');
   await page.click('button:has-text("Проверить")');
   await page.waitForSelector('.distance-badge-ineligible', { state: 'visible', timeout: 10000 });
   await page.screenshot({ path: path.join(ARTIFACT_DIR, '05_delivery_ineligible.png') });
-  console.log('✓ Ineligible address alert verified (> 2 km)');
+  console.log('✓ Ineligible address alert verified (> 4 km)');
 
-  // Test Case B: Inside 2km (Burtsevo)
-  console.log('6b. Testing inside 2km address...');
+  // Test Case B: Inside 4km (Burtsevo)
+  console.log('6b. Testing inside 4km address...');
   await addressInput.fill('д Бурцево, ул Раздолье, д 236');
   await page.click('button:has-text("Проверить")');
   await page.waitForSelector('.distance-badge-eligible', { state: 'visible', timeout: 10000 });
   await page.screenshot({ path: path.join(ARTIFACT_DIR, '06_delivery_eligible.png') });
-  console.log('✓ Eligible address verified (distance < 2 km, 250 руб delivery fee)');
+  console.log('✓ Eligible address verified (distance < 4 km, 250 руб delivery fee)');
 
   // 7. Place Order
   console.log('7. Submitting order...');

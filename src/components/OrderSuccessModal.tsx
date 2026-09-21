@@ -96,7 +96,7 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
               <>
                 <Truck size={16} style={{ color: 'var(--accent-copper)' }} />
                 <span>
-                  <strong>Курьерская доставка:</strong> в пределах 2 км {order.delivery_distance_km ? `(${order.delivery_distance_km} км)` : ''}
+                  <strong>Курьерская доставка:</strong> в пределах 4 км {order.delivery_distance_km ? `(${order.delivery_distance_km} км)` : ''}
                 </span>
               </>
             )}

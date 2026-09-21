@@ -161,7 +161,7 @@ export default function CartDrawer({
       }
       if (!distanceResult || !distanceResult.isEligible) {
         setErrorMessage(
-          'Доставка курьером возможна только в радиусе 2 км от производства. Выберите «Самовывоз» или укажите адрес в пределах 2 км.'
+          'Доставка курьером возможна только в радиусе 4 км от производства. Выберите «Самовывоз» или укажите адрес в пределах 4 км.'
         );
         return;
       }
@@ -476,7 +476,7 @@ export default function CartDrawer({
                       <span>Доставка до двери</span>
                     </div>
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      Радиус 2 км • 250 ₽
+                      Радиус 4 км • 250 ₽
                     </span>
                   </button>
                 </div>
@@ -508,7 +508,7 @@ export default function CartDrawer({
                 <div style={{ marginBottom: '20px' }}>
                   <div className="form-group" style={{ position: 'relative' }} ref={dropdownRef}>
                     <label className="form-label">
-                      Адрес доставки в радиусе 2 км (улица, дом):
+                      Адрес доставки в радиусе 4 км (улица, дом):
                     </label>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
@@ -575,10 +575,10 @@ export default function CartDrawer({
                           <div className="distance-badge-ineligible">
                             <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
                             <div>
-                              <strong>Вне зоны доставки (более 2 км)</strong>
+                              <strong>Вне зоны доставки (более 4 км)</strong>
                               <div style={{ fontSize: '12px', marginTop: '2px' }}>
                                 Расстояние до указанного адреса: {distanceResult.distanceKm} км.
-                                Наш цех доставляет заказы в радиусе 2 км. Рекомендуем переключиться на{' '}
+                                Наш цех доставляет заказы в радиусе 4 км. Рекомендуем переключиться на{' '}
                                 <button
                                   type="button"
                                   onClick={() => setDeliveryType('pickup')}

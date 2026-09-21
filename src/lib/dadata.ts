@@ -10,7 +10,7 @@ export const BASE_COORDS = {
 };
 
 export const DELIVERY_RULES = {
-  radiusKm: 2.0,
+  radiusKm: 4.0,
   deliveryCost: 250,
   freeDeliveryThreshold: 5000,
 };

@@ -110,7 +110,7 @@ const defaultSettings: Record<string, string> = {
   base_lat: '56.131897',
   base_lon: '43.743571',
   base_address: 'Нижегородская область, Богородский м.о., д. Бурцево, ул. Раздолье, 236/2',
-  delivery_radius_km: '2.0',
+  delivery_radius_km: '4.0',
   delivery_price: '250',
   free_delivery_threshold: '5000',
   producer_name: 'ИП Невдахин Дмитрий Викторович',
