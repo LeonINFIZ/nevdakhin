@@ -133,9 +133,6 @@ export default function AdminLoginPage() {
                 autoFocus
               />
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Пароль по умолчанию: <code>nevdakhin2026</code>
-            </div>
           </div>
 
           <button
