@@ -74,7 +74,7 @@ export default function CartPage() {
       clearTimeout(suggestDebounceRef.current);
     }
 
-    if (text.trim().length < 3) {
+    if (text.trim().length < 2) {
       setSuggestions([]);
       return;
     }
@@ -85,18 +85,19 @@ export default function CartPage() {
         const res = await fetch('/api/dadata/suggest', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text }),
+          body: JSON.stringify({ query: text.trim() }),
         });
         if (res.ok) {
           const data = await res.json();
-          setSuggestions(data.suggestions || []);
+          const list = Array.isArray(data) ? data : (data.suggestions || []);
+          setSuggestions(list);
         }
       } catch (err) {
         console.error('DaData suggest error:', err);
       } finally {
         setIsSearchingAddress(false);
       }
-    }, 280);
+    }, 250);
   };
 
   const handleSelectSuggestion = (suggestion: DaDataSuggestion) => {
@@ -778,14 +779,20 @@ export default function CartPage() {
 
                         {/* DaData Suggestions Dropdown */}
                         {suggestions.length > 0 && (
-                          <div className="suggest-dropdown">
+                          <div className="suggest-dropdown" style={{ zIndex: 60 }}>
                             {suggestions.map((sug, idx) => (
                               <div
                                 key={idx}
                                 className="suggest-item"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleSelectSuggestion(sug);
+                                }}
                                 onClick={() => handleSelectSuggestion(sug)}
+                                style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
                               >
-                                {sug.value}
+                                <MapPin size={14} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-copper)' }} />
+                                <span>{sug.value}</span>
                               </div>
                             ))}
                           </div>

@@ -68,11 +68,17 @@ export async function suggestAddress(query: string): Promise<AddressSuggestion[]
       },
       body: JSON.stringify({
         query: query.trim(),
-        count: 5,
-        // prioritize Nizhny Novgorod region if not specified
+        count: 7,
+        // prioritize Nizhny Novgorod region
         locations: [
           {
             region: 'Нижегородская',
+          },
+        ],
+        // boost Bogorodsky district (Burtsevo, Oksky Bereg, Doskino)
+        locations_boost: [
+          {
+            kladr_id: '5200500000000',
           },
         ],
       }),
@@ -87,7 +93,7 @@ export async function suggestAddress(query: string): Promise<AddressSuggestion[]
           Accept: 'application/json',
           Authorization: `Token ${DADATA_API_KEY}`,
         },
-        body: JSON.stringify({ query: query.trim(), count: 5 }),
+        body: JSON.stringify({ query: query.trim(), count: 7 }),
       });
       const data = await fallbackRes.json();
       return data.suggestions || [];

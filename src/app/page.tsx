@@ -10,6 +10,7 @@ import ProductModal from '@/components/ProductModal';
 import AboutMaster from '@/components/AboutMaster';
 import RecipesBanner from '@/components/RecipesBanner';
 import DeliverySection from '@/components/DeliverySection';
+import MobileCategorySpoilers from '@/components/MobileCategorySpoilers';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { Category, Product } from '@/types';
@@ -95,67 +96,91 @@ export default function HomePage() {
 
         {/* Catalog Section with sticky categories bar spanning all products */}
         <section id="catalog" className="scroll-section" style={{ paddingBottom: '60px' }}>
-          <CategoryNav
-            categories={categories}
-            activeCategory={activeCategory}
-            onSelectCategory={setActiveCategory}
-            activeSubcategory={activeSubcategory}
-            onSelectSubcategory={setActiveSubcategory}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-          />
+          {/* Desktop View */}
+          <div className="catalog-desktop-view">
+            <CategoryNav
+              categories={categories}
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+              activeSubcategory={activeSubcategory}
+              onSelectSubcategory={setActiveSubcategory}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
 
-          {/* Products Grid */}
-          <div className="container" style={{ marginTop: '24px' }}>
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-                <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto 16px', color: 'var(--accent-copper)' }} />
-                <div style={{ fontSize: '16px', fontWeight: 600 }}>Загружаем ремесленные деликатесы...</div>
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '80px 20px',
-                  background: 'var(--bg-card)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-craft)',
-                  margin: '32px 0',
-                }}
-              >
-                <h3 style={{ fontSize: '22px', color: 'var(--bg-dark)', marginBottom: '8px' }}>
-                  В этой категории пока нет товаров
-                </h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px' }}>
-                  Попробуйте сбросить фильтры или выбрать другую категорию
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveCategory('all');
-                    setActiveSubcategory('');
-                    setSearchQuery('');
+            {/* Products Grid */}
+            <div className="container" style={{ marginTop: '24px' }}>
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
+                  <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto 16px', color: 'var(--accent-copper)' }} />
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Загружаем ремесленные деликатесы...</div>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: '80px 20px',
+                    background: 'var(--bg-card)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '1px solid var(--border-craft)',
+                    margin: '32px 0',
                   }}
-                  className="btn-primary"
                 >
-                  Показать все деликатесы
-                </button>
+                  <h3 style={{ fontSize: '22px', color: 'var(--bg-dark)', marginBottom: '8px' }}>
+                    В этой категории пока нет товаров
+                  </h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px' }}>
+                    Попробуйте сбросить фильтры или выбрать другую категорию
+                  </p>
+                  <button
+                    onClick={() => {
+                      setActiveCategory('all');
+                      setActiveSubcategory('');
+                      setSearchQuery('');
+                    }}
+                    className="btn-primary"
+                  >
+                    Показать все деликатесы
+                  </button>
+                </div>
+              ) : (
+                <div className="products-grid">
+                  {filteredProducts.map((product) => {
+                    const cartItem = cartItems.find((it) => it.product.id === product.id);
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        quantityInCart={cartItem ? cartItem.quantity : 0}
+                        onAddToCart={addToCart}
+                        onUpdateQuantity={updateQuantity}
+                        onOpenDetails={setSelectedProduct}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile View: Vertical Spoilers / Accordion */}
+          <div className="catalog-mobile-view">
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto 14px', color: 'var(--accent-copper)' }} />
+                <div style={{ fontSize: '15px', fontWeight: 600 }}>Загружаем деликатесы...</div>
               </div>
             ) : (
-              <div className="products-grid">
-                {filteredProducts.map((product) => {
-                  const cartItem = cartItems.find((it) => it.product.id === product.id);
-                  return (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      quantityInCart={cartItem ? cartItem.quantity : 0}
-                      onAddToCart={addToCart}
-                      onUpdateQuantity={updateQuantity}
-                      onOpenDetails={setSelectedProduct}
-                    />
-                  );
-                })}
-              </div>
+              <MobileCategorySpoilers
+                categories={categories}
+                products={products}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                cartItems={cartItems}
+                onAddToCart={addToCart}
+                onUpdateQuantity={updateQuantity}
+                onOpenDetails={setSelectedProduct}
+              />
             )}
           </div>
         </section>

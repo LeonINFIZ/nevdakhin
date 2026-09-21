@@ -546,6 +546,14 @@ img {
 }
 
 /* Catalog Header Section */
+.catalog-desktop-view {
+  display: block;
+}
+
+.catalog-mobile-view {
+  display: none;
+}
+
 .catalog-header-section,
 .catalog-header-container {
   padding-top: 20px;
@@ -593,8 +601,23 @@ img {
 .catalog-search-wrapper .catalog-search-input {
   padding-left: 44px !important;
   padding-right: 14px;
-  height: 42px;
-  font-size: 14px;
+  height: 44px;
+  font-size: 14.5px;
+  background-color: #FFFFFF !important;
+  border: 2px solid #C2B099 !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.catalog-search-wrapper .catalog-search-input:hover {
+  border-color: #A8957E !important;
+}
+
+.catalog-search-wrapper .catalog-search-input:focus {
+  border-color: var(--accent-copper) !important;
+  box-shadow: 0 0 0 3px rgba(194, 98, 42, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  outline: none !important;
 }
 
 /* Category Sticky Pills Bar */
@@ -1106,6 +1129,15 @@ img {
   .mobile-menu-toggle {
     width: 34px;
     height: 34px;
+  }
+
+  /* Responsive switch between desktop catalog and mobile spoilers */
+  .catalog-desktop-view {
+    display: none !important;
+  }
+
+  .catalog-mobile-view {
+    display: block !important;
   }
 
   /* Sticky categories bar on mobile */

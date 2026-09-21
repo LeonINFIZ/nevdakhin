@@ -1,11 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Truck, MapPin, CheckCircle2, AlertCircle, Phone, Search, Loader2, Navigation } from 'lucide-react';
 
 export default function DeliverySection() {
   const [addressInput, setAddressInput] = useState('');
   const [checking, setChecking] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{ value: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
+
+  const suggestTimeout = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
   const [result, setResult] = useState<{
     formattedAddress: string;
     distanceKm: number;
@@ -14,25 +21,63 @@ export default function DeliverySection() {
     reason?: string;
   } | null>(null);
 
-  const handleCheckAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addressInput.trim()) return;
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
+  const handleInputChange = (val: string) => {
+    setAddressInput(val);
+    setResult(null);
+
+    if (suggestTimeout.current) clearTimeout(suggestTimeout.current);
+
+    if (val.trim().length >= 2) {
+      suggestTimeout.current = setTimeout(async () => {
+        try {
+          setIsSearchingSuggestions(true);
+          const res = await fetch(`/api/dadata/suggest?q=${encodeURIComponent(val.trim())}`);
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.suggestions || []);
+            setSuggestions(list);
+            setShowSuggestions(list.length > 0);
+          }
+        } catch {
+          // ignore error
+        } finally {
+          setIsSearchingSuggestions(false);
+        }
+      }, 250);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const checkAddressDistance = async (addr: string) => {
+    if (!addr.trim()) return;
     setChecking(true);
     setResult(null);
+    setShowSuggestions(false);
 
     try {
       const res = await fetch('/api/dadata/distance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: addressInput }),
+        body: JSON.stringify({ address: addr.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
         setResult(data);
       } else {
         setResult({
-          formattedAddress: addressInput,
+          formattedAddress: addr,
           distanceKm: 999,
           isEligible: false,
           deliveryCost: 0,
@@ -41,7 +86,7 @@ export default function DeliverySection() {
       }
     } catch {
       setResult({
-        formattedAddress: addressInput,
+        formattedAddress: addr,
         distanceKm: 999,
         isEligible: false,
         deliveryCost: 0,
@@ -50,6 +95,19 @@ export default function DeliverySection() {
     } finally {
       setChecking(false);
     }
+  };
+
+  const handleSelectSuggestion = (value: string) => {
+    setAddressInput(value);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    checkAddressDistance(value);
+  };
+
+  const handleCheckAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addressInput.trim()) return;
+    checkAddressDistance(addressInput);
   };
 
   return (
@@ -169,15 +227,55 @@ export default function DeliverySection() {
                 Проверить, входит ли ваш адрес в зону 4 км:
               </div>
 
-              <form onSubmit={handleCheckAddress} style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  placeholder="д. Бурцево, ул. Раздолье, 10"
-                  value={addressInput}
-                  onChange={(e) => setAddressInput(e.target.value)}
-                  className="form-input"
-                  style={{ fontSize: '13px', padding: '9px 12px' }}
-                />
+              <form onSubmit={handleCheckAddress} style={{ display: 'flex', gap: '8px', position: 'relative' }}>
+                <div style={{ position: 'relative', flex: 1 }} ref={dropdownRef}>
+                  <input
+                    type="text"
+                    placeholder="д. Бурцево, ул. Раздолье, 10"
+                    value={addressInput}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (suggestions.length > 0) setShowSuggestions(true);
+                    }}
+                    className="form-input"
+                    style={{ fontSize: '13px', padding: '9px 12px', width: '100%' }}
+                  />
+                  {isSearchingSuggestions && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'var(--accent-copper)',
+                      }}
+                    >
+                      <Loader2 size={14} className="animate-spin" />
+                    </div>
+                  )}
+
+                  {/* Dropdown with suggestions */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="suggest-dropdown" style={{ zIndex: 60 }}>
+                      {suggestions.map((sug, idx) => (
+                        <div
+                          key={idx}
+                          className="suggest-item"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(sug.value);
+                          }}
+                          onClick={() => handleSelectSuggestion(sug.value)}
+                          style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
+                        >
+                          <MapPin size={13} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-copper)' }} />
+                          <span>{sug.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
                   disabled={checking || !addressInput.trim()}
