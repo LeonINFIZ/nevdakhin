@@ -86,7 +86,7 @@ export default function Hero() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                 gap: '14px',
                 paddingTop: '20px',
                 borderTop: '1px solid var(--border-craft)',

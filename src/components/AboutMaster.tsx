@@ -125,6 +125,7 @@ export default function AboutMaster() {
 
             {/* Floating Quality Badge */}
             <div
+              className="about-floating-badge"
               style={{
                 position: 'absolute',
                 top: '-16px',
@@ -261,6 +262,10 @@ export default function AboutMaster() {
           .about-grid {
             grid-template-columns: 1fr !important;
             gap: 36px !important;
+          }
+          .about-floating-badge {
+            top: 12px !important;
+            right: 12px !important;
           }
         }
       `}</style>

@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import CategoryNav from '@/components/CategoryNav';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '@/components/ProductModal';
-import CartDrawer from '@/components/CartDrawer';
-import OrderSuccessModal from '@/components/OrderSuccessModal';
-import Footer from '@/components/Footer';
 import AboutMaster from '@/components/AboutMaster';
 import DeliverySection from '@/components/DeliverySection';
-import { Category, Product, CartItem, Order } from '@/types';
+import Footer from '@/components/Footer';
+import { useCart } from '@/context/CartContext';
+import { Category, Product } from '@/types';
 import { ShoppingBag, Loader2 } from 'lucide-react';
 
 export default function HomePage() {
@@ -24,13 +24,11 @@ export default function HomePage() {
   const [activeSubcategory, setActiveSubcategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Cart
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  // Cart from global context
+  const { cartItems, cartCount, cartTotal, addToCart, updateQuantity } = useCart();
 
-  // Modals
+  // Modal
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
   // Load categories and products on mount
   useEffect(() => {
@@ -54,70 +52,7 @@ export default function HomePage() {
       }
     }
     loadData();
-
-    // Restore cart from localStorage
-    try {
-      const savedCart = localStorage.getItem('nevdakhin_cart');
-      if (savedCart) {
-        setCartItems(JSON.parse(savedCart));
-      }
-    } catch {
-      // ignore
-    }
   }, []);
-
-  // Save cart to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('nevdakhin_cart', JSON.stringify(cartItems));
-    } catch {
-      // ignore
-    }
-  }, [cartItems]);
-
-  // Cart calculations
-  const cartCount = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    [cartItems]
-  );
-
-  const cartTotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    [cartItems]
-  );
-
-  // Cart actions
-  const handleAddToCart = (product: Product) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-  };
-
-  const handleUpdateQuantity = (productId: number, quantity: number) => {
-    setCartItems((prev) => {
-      if (quantity <= 0) {
-        return prev.filter((item) => item.product.id !== productId);
-      }
-      return prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      );
-    });
-  };
-
-  const handleClearCart = () => {
-    setCartItems([]);
-    try {
-      localStorage.removeItem('nevdakhin_cart');
-    } catch {}
-  };
 
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -151,79 +86,77 @@ export default function HomePage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <Header
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onOpenCart={() => setIsCartOpen(true)}
-      />
+      <Header />
 
       <main style={{ flex: 1 }}>
         {/* Hero Section */}
         <Hero />
 
-        {/* Category Navigation Bar */}
-        <CategoryNav
-          categories={categories}
-          activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
-          activeSubcategory={activeSubcategory}
-          onSelectSubcategory={setActiveSubcategory}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+        {/* Catalog Section with sticky categories bar spanning all products */}
+        <section id="catalog" className="scroll-section" style={{ paddingBottom: '60px' }}>
+          <CategoryNav
+            categories={categories}
+            activeCategory={activeCategory}
+            onSelectCategory={setActiveCategory}
+            activeSubcategory={activeSubcategory}
+            onSelectSubcategory={setActiveSubcategory}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
 
-        {/* Products Grid Section */}
-        <section className="container" style={{ paddingBottom: '60px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-              <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto 16px', color: 'var(--accent-copper)' }} />
-              <div style={{ fontSize: '16px', fontWeight: 600 }}>Загружаем ремесленные деликатесы...</div>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '80px 20px',
-                background: 'var(--bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-craft)',
-                margin: '32px 0',
-              }}
-            >
-              <h3 style={{ fontSize: '22px', color: 'var(--bg-dark)', marginBottom: '8px' }}>
-                В этой категории пока нет товаров
-              </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px' }}>
-                Попробуйте сбросить фильтры или выбрать другую категорию
-              </p>
-              <button
-                onClick={() => {
-                  setActiveCategory('all');
-                  setActiveSubcategory('');
-                  setSearchQuery('');
+          {/* Products Grid */}
+          <div className="container" style={{ marginTop: '24px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
+                <Loader2 size={36} className="animate-spin" style={{ margin: '0 auto 16px', color: 'var(--accent-copper)' }} />
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>Загружаем ремесленные деликатесы...</div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '80px 20px',
+                  background: 'var(--bg-card)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border-craft)',
+                  margin: '32px 0',
                 }}
-                className="btn-primary"
               >
-                Показать все деликатесы
-              </button>
-            </div>
-          ) : (
-            <div className="products-grid">
-              {filteredProducts.map((product) => {
-                const cartItem = cartItems.find((it) => it.product.id === product.id);
-                return (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    quantityInCart={cartItem ? cartItem.quantity : 0}
-                    onAddToCart={handleAddToCart}
-                    onUpdateQuantity={handleUpdateQuantity}
-                    onOpenDetails={setSelectedProduct}
-                  />
-                );
-              })}
-            </div>
-          )}
+                <h3 style={{ fontSize: '22px', color: 'var(--bg-dark)', marginBottom: '8px' }}>
+                  В этой категории пока нет товаров
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px' }}>
+                  Попробуйте сбросить фильтры или выбрать другую категорию
+                </p>
+                <button
+                  onClick={() => {
+                    setActiveCategory('all');
+                    setActiveSubcategory('');
+                    setSearchQuery('');
+                  }}
+                  className="btn-primary"
+                >
+                  Показать все деликатесы
+                </button>
+              </div>
+            ) : (
+              <div className="products-grid">
+                {filteredProducts.map((product) => {
+                  const cartItem = cartItems.find((it) => it.product.id === product.id);
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      quantityInCart={cartItem ? cartItem.quantity : 0}
+                      onAddToCart={addToCart}
+                      onUpdateQuantity={updateQuantity}
+                      onOpenDetails={setSelectedProduct}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* About the Master Dmitry Nevdakhin & Story */}
@@ -239,24 +172,27 @@ export default function HomePage() {
       {/* Floating Bottom Bar on Mobile if Cart has items */}
       {cartCount > 0 && (
         <div className="mobile-cart-bar">
-          <button
-            onClick={() => setIsCartOpen(true)}
+          <Link
+            href="/cart"
             className="btn-primary"
             style={{
               width: '100%',
               padding: '14px 20px',
               fontSize: '15px',
-              boxShadow: 'var(--shadow-lg)',
+              boxShadow: '0 8px 24px rgba(194, 98, 42, 0.45)',
               display: 'flex',
               justifyContent: 'space-between',
+              alignItems: 'center',
+              borderRadius: 'var(--radius-md)',
+              textDecoration: 'none',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ShoppingBag size={18} />
-              <span>Корзина ({cartCount})</span>
+              <span>Перейти в корзину ({cartCount})</span>
             </div>
-            <strong>{cartTotal} ₽</strong>
-          </button>
+            <strong>{cartTotal} ₽ →</strong>
+          </Link>
         </div>
       )}
 
@@ -269,24 +205,8 @@ export default function HomePage() {
             ? cartItems.find((it) => it.product.id === selectedProduct.id)?.quantity || 0
             : 0
         }
-        onAddToCart={handleAddToCart}
-        onUpdateQuantity={handleUpdateQuantity}
-      />
-
-      {/* Cart & Checkout Drawer */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cartItems={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onClearCart={handleClearCart}
-        onOrderSuccess={(order) => setCompletedOrder(order)}
-      />
-
-      {/* Order Success Confirmation Modal */}
-      <OrderSuccessModal
-        order={completedOrder}
-        onClose={() => setCompletedOrder(null)}
+        onAddToCart={addToCart}
+        onUpdateQuantity={updateQuantity}
       />
     </div>
   );

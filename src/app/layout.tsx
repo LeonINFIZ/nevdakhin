@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { CartProvider } from '@/context/CartContext';
 
 export const metadata: Metadata = {
   title: 'НЕВДАХИНЪ — Семейная ремесленная мануфактура',
@@ -23,7 +24,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }
