@@ -13,7 +13,7 @@ interface HeaderProps {
   onOpenCart?: () => void;
 }
 
-export default function Header({}: HeaderProps) {
+export default function Header({ }: HeaderProps) {
   const { cartCount, cartTotal } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -164,7 +164,7 @@ export default function Header({}: HeaderProps) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="mobile-nav-item"
               >
-                📖 Рецепты приготовления
+                Рецепты приготовления
               </Link>
               <Link
                 href="/#about"
