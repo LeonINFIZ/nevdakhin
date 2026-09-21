@@ -16,10 +16,17 @@ export async function GET(request: Request) {
         p.*, 
         c.name as category_name, 
         c.slug as category_slug,
-        s.name as subcategory_name
+        s.name as subcategory_name,
+        b.bg_color as badge_bg,
+        b.text_color as badge_text,
+        b.border_color as badge_border,
+        CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_recipe,
+        r.slug as recipe_slug
       FROM products p
       JOIN categories c ON p.category_id = c.id
       LEFT JOIN subcategories s ON p.subcategory_id = s.id
+      LEFT JOIN badges b ON b.name = p.badge
+      LEFT JOIN recipes r ON r.product_id = p.id AND r.is_active = 1
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -51,6 +58,7 @@ export async function GET(request: Request) {
     const products: Product[] = rows.map((r) => ({
       ...r,
       images: JSON.parse(r.images || '[]'),
+      has_recipe: Boolean(r.has_recipe),
     }));
 
     return NextResponse.json(products);

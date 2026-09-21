@@ -18,6 +18,52 @@ export interface Subcategory {
   is_active: number;
 }
 
+export interface Badge {
+  id: number;
+  name: string;
+  bg_color: string;
+  text_color: string;
+  border_color: string;
+  sort_order: number;
+  created_at?: string;
+  product_count?: number;
+}
+
+export interface RecipeIngredient {
+  name: string;
+  amount: string;
+}
+
+export interface RecipeStep {
+  step_number: number;
+  title: string;
+  description: string;
+  image_url?: string;
+  tip?: string;
+}
+
+export interface Recipe {
+  id: number;
+  product_id?: number | null;
+  product_title?: string;
+  product_price?: number;
+  product_image?: string;
+  product_weight?: string;
+  title: string;
+  slug: string;
+  description: string;
+  cover_image: string;
+  video_url?: string;
+  prep_time: string;
+  portions: string;
+  difficulty: string; // 'Легко' | 'Средне' | 'Мастер'
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  is_active: number;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Product {
   id: number;
   category_id: number;
@@ -34,7 +80,12 @@ export interface Product {
   old_price?: number | null;
   images: string[];
   in_stock: number; // 1 = in stock, 0 = out of stock
-  badge?: string | null; // e.g. "Хит", "Семейный рецепт", "Новинка", "Ограниченная партия"
+  badge?: string | null;
+  badge_bg?: string | null;
+  badge_text?: string | null;
+  badge_border?: string | null;
+  has_recipe?: boolean;
+  recipe_slug?: string | null;
   sort_order: number;
   created_at: string;
 }

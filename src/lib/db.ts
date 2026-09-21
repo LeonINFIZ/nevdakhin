@@ -103,6 +103,35 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS badges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    bg_color TEXT NOT NULL DEFAULT '#FFF4E5',
+    text_color TEXT NOT NULL DEFAULT '#B25E09',
+    border_color TEXT NOT NULL DEFAULT '#FCD34D',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS recipes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER,
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    description TEXT,
+    cover_image TEXT NOT NULL,
+    video_url TEXT,
+    prep_time TEXT DEFAULT '45 мин',
+    portions TEXT DEFAULT '4 порции',
+    difficulty TEXT DEFAULT 'Средне',
+    ingredients TEXT DEFAULT '[]',
+    steps TEXT DEFAULT '[]',
+    is_active INTEGER DEFAULT 1,
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE SET NULL
+  );
 `);
 
 // Seed default settings if not exists
@@ -448,6 +477,194 @@ if (categoriesCount === 0) {
       1,
       p.badge,
       pSort++
+    );
+  }
+}
+
+// Seed default badges if table is empty
+const badgesCount = (db.prepare('SELECT COUNT(*) as count FROM badges').get() as { count: number }).count;
+if (badgesCount === 0) {
+  const insertBadge = db.prepare(`
+    INSERT INTO badges (name, bg_color, text_color, border_color, sort_order)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  const defaultBadges = [
+    { name: 'Хит продаж', bg: '#FFF4E5', text: '#B25E09', border: '#FCD34D', sort: 1 },
+    { name: 'Семейный рецепт', bg: '#FDF2EB', text: '#C2622A', border: '#F5C7A9', sort: 2 },
+    { name: 'Новинка', bg: '#EBF3ED', text: '#3A6347', border: '#B7DDC2', sort: 3 },
+    { name: 'ГОСТ 1936', bg: '#FDF2EB', text: '#C2622A', border: '#F5C7A9', sort: 4 },
+    { name: 'Рекомендуем', bg: '#FFF4E5', text: '#B25E09', border: '#FCD34D', sort: 5 },
+    { name: 'Ограниченная партия', bg: '#F5EBE1', text: '#6E492B', border: '#DECBB9', sort: 6 },
+    { name: 'Детям', bg: '#EBF3ED', text: '#3A6347', border: '#B7DDC2', sort: 7 },
+  ];
+  for (const b of defaultBadges) {
+    insertBadge.run(b.name, b.bg, b.text, b.border, b.sort);
+  }
+}
+
+// Seed default recipes if table is empty
+const recipesCount = (db.prepare('SELECT COUNT(*) as count FROM recipes').get() as { count: number }).count;
+if (recipesCount === 0) {
+  const insertRecipe = db.prepare(`
+    INSERT INTO recipes (product_id, title, slug, description, cover_image, video_url, prep_time, portions, difficulty, ingredients, steps, is_active, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `);
+
+  const beefProduct = db.prepare("SELECT id FROM products WHERE title LIKE '%говяжья%' LIMIT 1").get() as { id: number } | undefined;
+  const krakowProduct = db.prepare("SELECT id FROM products WHERE title LIKE '%Краковская%' LIMIT 1").get() as { id: number } | undefined;
+  const pelmeniProduct = db.prepare("SELECT id FROM products WHERE title LIKE '%Пельмени%' LIMIT 1").get() as { id: number } | undefined;
+
+  const defaultRecipes = [
+    {
+      productId: beefProduct ? beefProduct.id : 2,
+      title: 'Томленая тушенка с гречкой и лесными грибами',
+      slug: 'tushenka-s-grechkoy-i-lesnymi-gribami',
+      description: 'Традиционное сытное блюдо русской кухни. Гречневая крупа напитывается прозрачным мясным соком и пряным ароматом отборной говядины длительного автоклавного томления.',
+      coverImage: '/images/products/tushenka.jpg',
+      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      prepTime: '35 мин',
+      portions: '4 порции',
+      difficulty: 'Легко',
+      ingredients: [
+        { name: 'Тушенка говяжья высший сорт «Невдахинъ»', amount: '1 банка (500 г)' },
+        { name: 'Гречневая крупа ядрица', amount: '250 г' },
+        { name: 'Белые грибы или шампиньоны', amount: '200 г' },
+        { name: 'Лук репчатый золотистый', amount: '1 крупная головка' },
+        { name: 'Свежая зелень петрушки и укропа', amount: 'по вкусу' },
+        { name: 'Соль и свежемолотый черный перец', amount: 'по вкусу' },
+      ],
+      steps: [
+        {
+          step_number: 1,
+          title: 'Подготовка крупы',
+          description: 'Промойте гречневую крупу. Обжарьте на сухой сковороде 2 минуты до появления приятного орехового аромата.',
+          tip: 'Прокаливание крупы делает кашу рассыпчатой.',
+          image_url: '/images/products/tushenka.jpg',
+        },
+        {
+          step_number: 2,
+          title: 'Пассеровка лука и грибов',
+          description: 'Снимите верхний прозрачный жирок из банки тушенки «Невдахинъ» и растопите на сковороде. Обжарьте мелко рубленый лук и нарезанные грибы 5 минут.',
+          tip: 'Натуральный говяжий смалец из банки намного ароматнее растительного масла.',
+          image_url: '/images/products/tushenka.jpg',
+        },
+        {
+          step_number: 3,
+          title: 'Добавление томленой говядины',
+          description: 'Выложите сочные кусочки тушеного мяса вместе с прозрачным мясным желе в сковороду. Прогрейте 2 минуты, разделяя волокна мяса лопаткой.',
+          tip: 'Мясо уже полностью готово и растушено, его не нужно зажаривать.',
+          image_url: '/images/products/tushenka.jpg',
+        },
+        {
+          step_number: 4,
+          title: 'Томление с гречкой',
+          description: 'Всыпьте гречку, влейте 450 мл кипятка, доведите до кипения и томите под крышкой на слабом огне 20 минут. Подавайте со свежей зеленью.',
+          tip: 'После выключения плиты укутайте сковороду полотенцем на 10 минут.',
+          image_url: '/images/products/tushenka.jpg',
+        },
+      ],
+      sort: 1,
+    },
+    {
+      productId: krakowProduct ? krakowProduct.id : 8,
+      title: 'Деревенская яичница с Краковской колбасой и томатами',
+      slug: 'derevenskaya-yaichnitsa-s-krakovskoy-kolbasoy',
+      description: 'Классический домашний завтрак. Ремесленная колбаса горячего копчения на ольховой щепе дарит блюду неповторимый мясной дух.',
+      coverImage: '/images/products/kolbasa.jpg',
+      videoUrl: '',
+      prepTime: '15 мин',
+      portions: '2 порции',
+      difficulty: 'Легко',
+      ingredients: [
+        { name: 'Колбаса Краковская ремесленная «Невдахинъ»', amount: '150 г' },
+        { name: 'Яйца фермерские отборные', amount: '4 шт' },
+        { name: 'Томаты спелые грунтовые', amount: '2 шт' },
+        { name: 'Зеленый лук и укроп', amount: 'несколько перьев' },
+        { name: 'Черный свежемолотый перец, крупная соль', amount: 'по вкусу' },
+      ],
+      steps: [
+        {
+          step_number: 1,
+          title: 'Обжарка кружочков колбасы',
+          description: 'Нарежьте краковскую колбасу кружками толщиной 5–6 мм. Обжарьте на сухой чугунной сковороде по 1.5 минуты с каждой стороны до золотистой корочки.',
+          tip: 'Колбаса выделит собственный ароматный сок, масло добавлять не нужно.',
+          image_url: '/images/products/kolbasa.jpg',
+        },
+        {
+          step_number: 2,
+          title: 'Томаты и яйца',
+          description: 'Добавьте нарезанные томаты к колбасе на 1 минуту, затем вбейте яйца, стараясь не повредить желтки.',
+          tip: 'Готовьте на умеренном огне под полуоткрытой крышкой.',
+          image_url: '/images/products/kolbasa.jpg',
+        },
+        {
+          step_number: 3,
+          title: 'Подача с пылу с жару',
+          description: 'Посыпьте зеленым луком и свежемолотым перцем. Подавайте прямо в сковороде с хрустящим деревенским хлебом.',
+          tip: 'Макайте хлеб в жидкий желток, смешанный с копченым мясным соком.',
+          image_url: '/images/products/kolbasa.jpg',
+        },
+      ],
+      sort: 2,
+    },
+    {
+      productId: pelmeniProduct ? pelmeniProduct.id : 12,
+      title: 'Пельмени ручной лепки с топленым маслом и домашним соусом',
+      slug: 'pelmeni-s-toplenym-maslom-i-sousom',
+      description: 'Рецепт правильной варки ремесленных пельменей из тонкого теста с сочным рубленым фаршем без потерь мясного бульона.',
+      coverImage: '/images/products/pelmeni.jpg',
+      videoUrl: '',
+      prepTime: '20 мин',
+      portions: '3 порции',
+      difficulty: 'Легко',
+      ingredients: [
+        { name: 'Пельмени сибирские ручной лепки «Невдахинъ»', amount: '1 упаковка (800 г)' },
+        { name: 'Масло сливочное топленое', amount: '50 г' },
+        { name: 'Лавровый лист и душистый перец', amount: '2 листа, 4 горошины' },
+        { name: 'Густая домашняя сметана', amount: 'по вкусу' },
+        { name: 'Свежая рубленая зелень', amount: 'по вкусу' },
+      ],
+      steps: [
+        {
+          step_number: 1,
+          title: 'Пряный бульон для варки',
+          description: 'Вскипятите в широкой кастрюле 3 литра воды, добавьте 1 ст. ложку соли, лавровый лист и перец. Опускайте пельмени партиями в кипящую воду, аккуратно помешивая.',
+          tip: 'Широкая кастрюля гарантирует, что пельмени не помнутся и проварятся равномерно.',
+          image_url: '/images/products/pelmeni.jpg',
+        },
+        {
+          step_number: 2,
+          title: 'Контроль готовности',
+          description: 'После всплытия варите ровно 6–7 минут на среднем огне при умеренном кипении.',
+          tip: 'Добавьте полстакана ледяной воды за 1 минуту до готовности — тесто станет нежным и упругим.',
+          image_url: '/images/products/pelmeni.jpg',
+        },
+        {
+          step_number: 3,
+          title: 'Подача с топленым маслом',
+          description: 'Выложите шумовкой в керамическую миску, полейте горячим топленым маслом и посыпьте свежей зеленью. Подавайте со сметаной.',
+          tip: 'Ешьте осторожно — внутри каждого пельменя много горячего мясного сока!',
+          image_url: '/images/products/pelmeni.jpg',
+        },
+      ],
+      sort: 3,
+    },
+  ];
+
+  for (const r of defaultRecipes) {
+    insertRecipe.run(
+      r.productId,
+      r.title,
+      r.slug,
+      r.description,
+      r.coverImage,
+      r.videoUrl,
+      r.prepTime,
+      r.portions,
+      r.difficulty,
+      JSON.stringify(r.ingredients),
+      JSON.stringify(r.steps),
+      r.sort
     );
   }
 }

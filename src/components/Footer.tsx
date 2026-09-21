@@ -92,7 +92,7 @@ export default function Footer() {
                   <span>+7 (920) 000-00-00</span>
                 </a>
                 <div style={{ fontSize: '11px', color: 'var(--text-light-muted)', marginTop: '2px' }}>
-                  Звонки, WhatsApp, Telegram
+                  Telegram / MAX, звонки
                 </div>
               </div>
             </div>

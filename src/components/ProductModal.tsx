@@ -1,9 +1,8 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Product } from '@/types';
-import { X, ShieldCheck, Thermometer, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, ShieldCheck, Thermometer, Plus, Minus, ShoppingBag, BookOpen, ArrowRight } from 'lucide-react';
 
 interface ProductModalProps {
   product: Product | null;
@@ -26,6 +25,12 @@ export default function ProductModal({
     product.images && product.images.length > 0
       ? product.images[0]
       : '/images/products/tushenka.jpg';
+
+  const badgeStyle: React.CSSProperties = {
+    ...(product.badge_bg ? { backgroundColor: product.badge_bg } : {}),
+    ...(product.badge_text ? { color: product.badge_text } : {}),
+    ...(product.badge_border ? { borderColor: product.badge_border } : {}),
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -60,11 +65,16 @@ export default function ProductModal({
             sizes="600px"
             style={{ objectFit: 'cover' }}
           />
-          {product.badge && (
-            <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-              <span className="badge-craft badge-hit">{product.badge}</span>
-            </div>
-          )}
+          <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {product.badge && (
+              <span className="badge-craft badge-hit" style={badgeStyle}>{product.badge}</span>
+            )}
+            {product.has_recipe && (
+              <span className="badge-craft" style={{ background: '#3A6347', color: '#FFFFFF', border: '1px solid #2B4E36' }}>
+                📖 Есть рецепт
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Modal Details */}
@@ -113,12 +123,46 @@ export default function ProductModal({
                 gap: '8px',
                 fontSize: '13px',
                 color: 'var(--text-muted)',
-                marginBottom: '24px',
+                marginBottom: '16px',
               }}
             >
               <Thermometer size={16} style={{ color: 'var(--accent-amber)' }} />
               <span>Хранение: {product.storage}</span>
             </div>
+          )}
+
+          {/* Recipe Link Button */}
+          {product.recipe_slug && (
+            <Link
+              href={`/recipes/${product.recipe_slug}`}
+              onClick={onClose}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, rgba(194, 98, 42, 0.08) 0%, rgba(217, 130, 43, 0.12) 100%)',
+                border: '1px solid rgba(194, 98, 42, 0.25)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--accent-copper)',
+                textDecoration: 'none',
+                marginBottom: '20px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>📖</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--bg-dark)' }}>
+                    Пошаговый рецепт приготовления
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Смотреть пошаговые фото, секреты и видео мастера
+                  </div>
+                </div>
+              </div>
+              <ArrowRight size={18} style={{ color: 'var(--accent-copper)', flexShrink: 0 }} />
+            </Link>
           )}
 
           {/* Footer Action */}

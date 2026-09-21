@@ -47,7 +47,36 @@ export default function ProductCard({
 
         <div className="product-card-badges">
           {product.badge && (
-            <span className={`badge-craft ${badgeClass}`}>{product.badge}</span>
+            <span
+              className={`badge-craft ${!product.badge_bg ? badgeClass : ''}`}
+              style={
+                product.badge_bg
+                  ? {
+                      backgroundColor: product.badge_bg,
+                      color: product.badge_text || undefined,
+                      borderColor: product.badge_border || undefined,
+                    }
+                  : undefined
+              }
+            >
+              {product.badge}
+            </span>
+          )}
+          {product.has_recipe && (
+            <span
+              className="badge-craft badge-recipe-indicator"
+              style={{
+                background: '#FFF5E6',
+                color: '#9C5823',
+                border: '1px solid #F5CBA7',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+              title="Для этого деликатеса доступен пошаговый рецепт приготовления"
+            >
+              📖 Рецепт
+            </span>
           )}
           {product.in_stock === 0 && (
             <span className="badge-craft" style={{ background: '#736B63', color: '#FFFFFF' }}>
@@ -55,32 +84,6 @@ export default function ProductCard({
             </span>
           )}
         </div>
-
-        {/* Quick view hover icon */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenDetails(product);
-          }}
-          style={{
-            position: 'absolute',
-            bottom: '12px',
-            right: '12px',
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(4px)',
-            borderRadius: '50%',
-            width: '34px',
-            height: '34px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-main)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-          title="Подробнее о составе"
-        >
-          <Eye size={16} />
-        </button>
       </div>
 
       {/* Body */}
@@ -107,35 +110,64 @@ export default function ProductCard({
             )}
           </div>
 
-          {quantityInCart > 0 ? (
-            <div className="qty-control">
-              <button
-                className="qty-btn"
-                onClick={() => onUpdateQuantity(product.id, quantityInCart - 1)}
-                aria-label="Уменьшить"
-              >
-                <Minus size={14} />
-              </button>
-              <span className="qty-num">{quantityInCart}</span>
-              <button
-                className="qty-btn"
-                onClick={() => onUpdateQuantity(product.id, quantityInCart + 1)}
-                aria-label="Увеличить"
-              >
-                <Plus size={14} />
-              </button>
-            </div>
-          ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
-              className="btn-primary"
-              style={{ padding: '9px 16px', fontSize: '13px' }}
-              onClick={() => onAddToCart(product)}
-              disabled={product.in_stock === 0}
+              type="button"
+              className="btn-view-quick"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenDetails(product);
+              }}
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-craft)',
+                background: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+                flexShrink: 0,
+              }}
+              title="Быстрый просмотр и рецепт"
+              aria-label="Подробнее"
             >
-              <Plus size={15} />
-              <span>В корзину</span>
+              <Eye size={17} />
             </button>
-          )}
+
+            {quantityInCart > 0 ? (
+              <div className="qty-control">
+                <button
+                  className="qty-btn"
+                  onClick={() => onUpdateQuantity(product.id, quantityInCart - 1)}
+                  aria-label="Уменьшить"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="qty-num">{quantityInCart}</span>
+                <button
+                  className="qty-btn"
+                  onClick={() => onUpdateQuantity(product.id, quantityInCart + 1)}
+                  aria-label="Увеличить"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                className="btn-primary btn-add-cart"
+                style={{ padding: '9px 15px', fontSize: '13px' }}
+                onClick={() => onAddToCart(product)}
+                disabled={product.in_stock === 0}
+              >
+                <Plus size={15} />
+                <span>В корзину</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

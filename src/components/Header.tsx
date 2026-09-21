@@ -95,6 +95,9 @@ export default function Header({}: HeaderProps) {
           <a href="/#catalog" className="header-nav-link">
             Каталог
           </a>
+          <Link href="/recipes" className="header-nav-link">
+            Рецепты
+          </Link>
           <a href="/#about" className="header-nav-link">
             О мастере
           </a>
@@ -120,7 +123,7 @@ export default function Header({}: HeaderProps) {
                 <span className="phone-full">+7 (920) 000-00-00</span>
                 <span className="phone-short">Позвонить</span>
               </span>
-              <span className="header-phone-sub">Звонки / WhatsApp</span>
+              <span className="header-phone-sub">Telegram / MAX</span>
             </div>
           </a>
 
@@ -155,6 +158,13 @@ export default function Header({}: HeaderProps) {
                 className="mobile-nav-item"
               >
                 Каталог деликатесов
+              </Link>
+              <Link
+                href="/recipes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mobile-nav-item"
+              >
+                📖 Рецепты приготовления
               </Link>
               <Link
                 href="/#about"
