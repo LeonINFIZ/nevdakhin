@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Order } from '@/types';
 import { CheckCircle, MapPin, Truck, Phone, X } from 'lucide-react';
 
@@ -10,11 +10,31 @@ interface OrderSuccessModalProps {
 }
 
 export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalProps) {
+  const overlayMouseDownTarget = useRef<EventTarget | null>(null);
+
   if (!order) return null;
 
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    overlayMouseDownTarget.current = e.target;
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (overlayMouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+      onClose();
+    }
+    overlayMouseDownTarget.current = null;
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', textAlign: 'center', padding: '32px 24px' }}>
+    <div
+      className="modal-overlay"
+      onMouseDown={handleOverlayMouseDown}
+      onClick={handleOverlayClick}
+    >
+      <div
+        className="modal-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', textAlign: 'center', padding: '32px 24px' }}>
         <button
           onClick={onClose}
           style={{
