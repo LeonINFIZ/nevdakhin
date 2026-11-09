@@ -27,7 +27,7 @@ jobs:
             echo "=== Deploying nevdakhin ==="
             
             # Go to app directory
-            cd /var/www/nevdahin
+            cd /var/www/nevdakhin
             
             # Pull latest changes
             git pull origin main
