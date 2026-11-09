@@ -3,8 +3,9 @@ module.exports = {
     {
       name: 'nevdakhin',
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 3001',
+      args: 'start -p 3001 -H 127.0.0.1',
       cwd: './',
+      exec_mode: 'fork',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -12,6 +13,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
+        HOSTNAME: '127.0.0.1',
       },
     },
   ],
