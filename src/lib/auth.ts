@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'nevdakhin2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '!Nevdakhin2026';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'nevdakhin-secret-session-key-2026';
 export const COOKIE_NAME = 'nevdakhin_admin_session';
 
