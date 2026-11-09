@@ -27,15 +27,23 @@ export async function POST(request: Request) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
+    const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
       if (!file.name) continue;
+      const ext = path.extname(file.name).toLowerCase() || '.jpg';
+      if (!ALLOWED_EXTS.includes(ext)) {
+        return NextResponse.json(
+          { error: `Недопустимый формат файла: ${ext}. Разрешены только изображения (${ALLOWED_EXTS.join(', ')})` },
+          { status: 400 }
+        );
+      }
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
       // Clean filename
-      const ext = path.extname(file.name).toLowerCase() || '.jpg';
       const cleanName = path
         .basename(file.name, ext)
         .toLowerCase()
